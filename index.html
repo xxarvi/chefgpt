@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChefGPT | Mystical AI Recipe Finder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Dancing+Script:wght@700&family=Orbitron:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0c0f1d 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            color: #e0e0ff;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(106, 17, 203, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(37, 117, 252, 0.1) 0%, transparent 20%),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle fill="none" stroke="rgba(44, 227, 160, 0.1)" stroke-width="1" cx="50" cy="50" r="10"/></svg>') repeat;
+            opacity: 0.8;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            animation: fadeInDown 1s ease;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2ce3a0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 0 0 15px rgba(106, 17, 203, 0.5);
+            letter-spacing: 1px;
+        }
+
+        .tagline {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.2rem;
+            color: #2ce3a0;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(44, 227, 160, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0a0d0;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+
+        .ai-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            box-shadow: 0 0 15px rgba(106, 17, 203, 0.5);
+        }
+
+        .app-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .input-section, .output-section {
+            background: rgba(25, 25, 45, 0.7);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 
+                        0 0 20px rgba(106, 17, 203, 0.2);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(106, 17, 203, 0.3);
+        }
+
+        .input-section {
+            flex: 1;
+            min-width: 300px;
+            animation: slideInLeft 0.8s ease;
+        }
+
+        .input-section::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+        }
+
+        .output-section {
+            flex: 2;
+            min-width: 300px;
+            animation: slideInRight 0.8s ease;
+        }
+
+        .output-section::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #2575fc, #2ce3a0);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #2ce3a0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #6a11cb;
+            text-shadow: 0 0 10px rgba(106, 17, 203, 0.5);
+        }
+
+        .ingredient-input {
+            display: flex;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        #ingredient-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid rgba(106, 17, 203, 0.5);
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+            background: rgba(20, 20, 35, 0.8);
+            color: #e0e0ff;
+            box-shadow: inset 0 0 10px rgba(106, 17, 203, 0.3);
+        }
+
+        #ingredient-input:focus {
+            border-color: #2ce3a0;
+            box-shadow: 0 0 0 3px rgba(44, 227, 160, 0.3), 
+                        inset 0 0 10px rgba(44, 227, 160, 0.3);
+        }
+
+        #ingredient-input::placeholder {
+            color: #7a7aad;
+        }
+
+        #add-ingredient {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            color: #2ce3a0;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+            text-shadow: 0 0 5px rgba(44, 227, 160, 0.5);
+        }
+
+        #add-ingredient:hover {
+            color: #6a11cb;
+            transform: translateY(-50%) scale(1.1);
+            text-shadow: 0 0 10px rgba(106, 17, 203, 0.8);
+        }
+
+        .ingredient-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+            min-height: 50px;
+        }
+
+        .ingredient-tag {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 0 10px rgba(106, 17, 203, 0.5);
+            animation: popIn 0.3s ease;
+        }
+
+        .ingredient-tag .remove {
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: transform 0.2s;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+
+        .ingredient-tag .remove:hover {
+            transform: scale(1.2);
+            color: #2ce3a0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #find-recipes {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+
+        #find-recipes:hover {
+            background: linear-gradient(135deg, #5a0fba 0%, #1a65ec 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(106, 17, 203, 0.6);
+        }
+
+        #find-recipes:disabled {
+            background: #3a3a5a;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #clear-all {
+            background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3a 100%);
+            color: #a0a0d0;
+            border: 1px solid rgba(106, 17, 203, 0.3);
+        }
+
+        #clear-all:hover {
+            background: linear-gradient(135deg, #3a3a5a 0%, #2a2a4a 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(106, 17, 203, 0.3);
+        }
+
+        .recipe-card {
+            background: rgba(30, 30, 50, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4), 
+                        0 0 15px rgba(37, 117, 252, 0.2);
+            animation: fadeIn 0.5s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(106, 17, 203, 0.3);
+        }
+
+        .recipe-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, #6a11cb, #2ce3a0);
+        }
+
+        .recipe-title {
+            font-size: 1.8rem;
+            color: #2ce3a0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 0 5px rgba(44, 227, 160, 0.3);
+        }
+
+        .recipe-description {
+            color: #b0b0e0;
+            font-style: italic;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed rgba(106, 17, 203, 0.5);
+        }
+
+        .recipe-ingredients, .recipe-instructions {
+            margin-bottom: 20px;
+        }
+
+        .recipe-subtitle {
+            font-size: 1.2rem;
+            color: #6a11cb;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 5px;
+            border-bottom: 2px dashed rgba(106, 17, 203, 0.3);
+            text-shadow: 0 0 5px rgba(106, 17, 203, 0.3);
+        }
+
+        ul, ol {
+            padding-left: 25px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+            padding-left: 5px;
+            color: #d0d0ff;
+        }
+
+        .recipe-info {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(37, 117, 252, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border: 1px solid rgba(37, 117, 252, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(44, 227, 160, 0.3);
+            border-radius: 50%;
+            border-top-color: #2ce3a0;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+            box-shadow: 0 0 10px rgba(44, 227, 160, 0.5);
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            color: #2ce3a0;
+            margin-top: 10px;
+            text-shadow: 0 0 5px rgba(44, 227, 160, 0.3);
+        }
+
+        .loading-dots {
+            display: inline-block;
+            width: 10px;
+            text-align: left;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2ce3a0;
+            margin: 0 2px;
+            animation: bounce 1.5s infinite;
+            box-shadow: 0 0 5px rgba(44, 227, 160, 0.5);
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .no-recipes {
+            text-align: center;
+            padding: 40px;
+            color: #a0a0d0;
+        }
+
+        .no-recipes i {
+            font-size: 3rem;
+            color: #6a11cb;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(106, 17, 203, 0.5);
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: #7a7aad;
+            font-size: 0.9rem;
+        }
+
+        .ai-tag {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(106, 17, 203, 0.5);
+        }
+
+        .api-status {
+            text-align: center;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            display: none;
+            background: rgba(44, 227, 160, 0.1);
+            color: #2ce3a0;
+            border: 1px solid rgba(44, 227, 160, 0.3);
+        }
+
+        .api-status.connected {
+            display: block;
+        }
+
+        .magic-effect {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .pulse {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(106, 17, 203, 0.5), transparent);
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 0.4; }
+            100% { transform: scale(0.8); opacity: 0.8; }
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 3rem;
+            }
+            
+            .tagline {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="magic-effect"></div>
+    
+    <div class="container">
+        <header>
+            <h1>ChefGPT</h1>
+            <div class="tagline">Culinary Magic at Your Fingertips</div>
+            <p class="subtitle">Enter ingredients to conjure mystical recipes from our AI chef</p>
+            <div class="ai-badge">Made by xharvi</div>
+        </header>
+
+        <div class="app-container">
+            <div class="input-section">
+                <div class="ai-tag">AI Input</div>
+                <h2 class="section-title"><i class="fas fa-hat-wizard"></i> Your Ingredients</h2>
+                
+                <div class="ingredient-input">
+                    <input type="text" id="ingredient-input" placeholder="Add an ingredient (e.g., chicken, tomatoes)">
+                    <button id="add-ingredient"><i class="fas fa-plus"></i></button>
+                </div>
+                
+                <p style="color: #7a7aad; margin-bottom: 15px; font-size: 0.9rem;">Examples: chicken, rice, broccoli, cheese, eggs</p>
+                
+                <h3 style="margin-bottom: 10px; color: #b0b0e0;">Selected Ingredients:</h3>
+                <div class="ingredient-list" id="ingredient-list">
+                    <!-- Ingredients will be added here dynamically -->
+                </div>
+                
+                <div class="controls">
+                    <button id="find-recipes"><i class="fas fa-wand-magic-sparkles"></i> Conjure Recipes</button>
+                    <button id="clear-all"><i class="fas fa-broom"></i> Clear All</button>
+                </div>
+                
+                <div class="api-status connected">
+                    <i class="fas fa-crystal-ball"></i>  Connection Established
+                </div>
+            </div>
+            
+            <div class="output-section">
+                <div class="ai-tag">AI Output</div>
+                <h2 class="section-title"><i class="fas fa-scroll"></i>  Recipes</h2>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <div class="loading-text">
+                        ChefGPT is conjuring culinary magic<span class="loading-dots">
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </span>
+                    </div>
+                    <p style="color: #7a7aad; margin-top: 20px; font-size: 0.9rem;">
+                        crafting your perfect recipes...
+                    </p>
+                </div>
+                
+                <div class="recipes-container" id="recipes-container">
+                    <div class="no-recipes" id="no-recipes">
+                        <i class="fas fa-cauldron"></i>
+                        <h3>No recipes yet</h3>
+                        <p>Add ingredients and click "Conjure Recipes" to begin</p>
+                    </div>
+                    <!-- Recipes will be generated here -->
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>ChefGPT &copy; 2023 | Culinary Magic Through AI</p>
+            <p>Unlock the secrets of mystical cooking</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ingredientInput = document.getElementById('ingredient-input');
+            const addIngredientBtn = document.getElementById('add-ingredient');
+            const ingredientList = document.getElementById('ingredient-list');
+            const findRecipesBtn = document.getElementById('find-recipes');
+            const clearAllBtn = document.getElementById('clear-all');
+            const recipesContainer = document.getElementById('recipes-container');
+            const loadingElement = document.getElementById('loading');
+            const noRecipesElement = document.getElementById('no-recipes');
+            const magicEffect = document.querySelector('.magic-effect');
+            
+            let ingredients = [];
+            
+            // Create magical pulse effects
+            function createPulse() {
+                const pulse = document.createElement('div');
+                pulse.className = 'pulse';
+                
+                const size = Math.random() * 200 + 100;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                
+                pulse.style.width = `${size}px`;
+                pulse.style.height = `${size}px`;
+                pulse.style.left = `${posX}%`;
+                pulse.style.top = `${posY}%`;
+                
+                magicEffect.appendChild(pulse);
+                
+                setTimeout(() => {
+                    pulse.remove();
+                }, 3000);
+            }
+            
+            // Add ingredient to list
+            addIngredientBtn.addEventListener('click', function() {
+                const ingredient = ingredientInput.value.trim();
+                if (ingredient && !ingredients.includes(ingredient.toLowerCase())) {
+                    addIngredient(ingredient);
+                    ingredientInput.value = '';
+                    createPulse();
+                }
+            });
+            
+            // Also add ingredient when pressing Enter
+            ingredientInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const ingredient = ingredientInput.value.trim();
+                    if (ingredient && !ingredients.includes(ingredient.toLowerCase())) {
+                        addIngredient(ingredient);
+                        ingredientInput.value = '';
+                        createPulse();
+                    }
+                }
+            });
+            
+            // Find recipes button
+            findRecipesBtn.addEventListener('click', async function() {
+                if (ingredients.length === 0) {
+                    showNotification('Please add at least one ingredient', 'error');
+                    return;
+                }
+                
+                // Show loading state
+                loadingElement.style.display = 'block';
+                noRecipesElement.style.display = 'none';
+                recipesContainer.innerHTML = '';
+                
+                // Disable button during processing
+                findRecipesBtn.disabled = true;
+                
+                try {
+                    // Generate recipes using OpenAI API
+                    const recipes = await generateRecipesWithAI(ingredients);
+                    
+                    // Display the recipes
+                    displayRecipes(recipes);
+                    
+                    // Create magical pulses
+                    for (let i = 0; i < 5; i++) {
+                        setTimeout(createPulse, i * 300);
+                    }
+                } catch (error) {
+                    console.error('Error generating recipes:', error);
+                    showNotification('Failed to generate recipes. Please try again.', 'error');
+                } finally {
+                    // Hide loading and enable button
+                    loadingElement.style.display = 'none';
+                    findRecipesBtn.disabled = false;
+                }
+            });
+            
+            // Clear all button
+            clearAllBtn.addEventListener('click', function() {
+                ingredients = [];
+                ingredientList.innerHTML = '';
+                recipesContainer.innerHTML = '';
+                noRecipesElement.style.display = 'block';
+                showNotification('All ingredients cleared', 'info');
+                
+                // Create magical pulses
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(createPulse, i * 300);
+                }
+            });
+            
+            function addIngredient(ingredient) {
+                const lowerCaseIngredient = ingredient.toLowerCase();
+                ingredients.push(lowerCaseIngredient);
+                
+                const tag = document.createElement('div');
+                tag.className = 'ingredient-tag';
+                tag.innerHTML = `
+                    ${ingredient}
+                    <span class="remove"><i class="fas fa-times"></i></span>
+                `;
+                
+                tag.querySelector('.remove').addEventListener('click', function() {
+                    const index = ingredients.indexOf(lowerCaseIngredient);
+                    if (index > -1) {
+                        ingredients.splice(index, 1);
+                    }
+                    tag.remove();
+                    showNotification(`Removed: ${ingredient}`, 'info');
+                    createPulse();
+                });
+                
+                ingredientList.appendChild(tag);
+                showNotification(`Added: ${ingredient}`, 'success');
+            }
+            
+            // Generate recipes using OpenAI API
+            async function generateRecipesWithAI(ingredients) {
+                // Show loading message with dots animation
+                startLoadingAnimation();
+                
+                // Simulate API call delay (3-5 seconds)
+                const delay = 3000 + Math.random() * 2000;
+                await new Promise(resolve => setTimeout(resolve, delay));
+                
+                // Stop loading animation
+                stopLoadingAnimation();
+                
+                // Simulated response from AI
+                return [
+                    {
+                        title: `Mystical ${ingredients[0]} & ${ingredients[1]} Enchantment`,
+                        description: `A magical dish that transforms ordinary ${ingredients[0]} and ${ingredients[1]} into an extraordinary culinary experience. Conjured by ChefGPT's mystical algorithms.`,
+                        ingredients: [
+                            `1 cup ${ingredients[0]}, enchanted`,
+                            `1 cup ${ingredients[1]}, charmed`,
+                            "2 cloves garlic, magically minced",
+                            "1 tbsp stardust (salt)",
+                            "1 tsp moon pepper (black pepper)",
+                            "3 tbsp celestial oil (olive oil)",
+                            "A pinch of dragon fire (chili flakes)",
+                            "Fresh basil from the enchanted garden"
+                        ],
+                        instructions: [
+                            `Begin by enchanting the ${ingredients[0]} with celestial oil in a mystical cauldron (pan)`,
+                            `Add charmed ${ingredients[1]} and cook until they shimmer with magical energy`,
+                            "Whisper incantations as you add the magically minced garlic",
+                            "Sprinkle stardust and moon pepper while stirring clockwise",
+                            "Add a pinch of dragon fire for mystical warmth",
+                            "Simmer until the ingredients harmonize in flavor",
+                            "Garnish with basil from the enchanted garden",
+                            "Serve under the full moon for maximum potency"
+                        ],
+                        prepTime: "10 min",
+                        cookTime: "20 min",
+                        difficulty: "Arcane"
+                    },
+                    {
+                        title: `Sorcerer's ${ingredients[0]} & ${ingredients[2]} Concoction`,
+                        description: `A powerful potion that combines ${ingredients[0]} and ${ingredients[2]} with arcane herbs and spices. Crafted by ChefGPT's mystical culinary arts.`,
+                        ingredients: [
+                            `2 cups ${ingredients[0]}, bewitched`,
+                            `1 cup ${ingredients[2]}, enchanted`,
+                            "1 wizard's onion, finely diced",
+                            "3 elven carrots, sliced",
+                            "4 cups phoenix broth (vegetable broth)",
+                            "2 tbsp unicorn tears (olive oil)",
+                            "1 tsp dried basilisk basil",
+                            "1 bay leaf from the ancient forest"
+                        ],
+                        instructions: [
+                            "Heat unicorn tears in a magical cauldron (pot)",
+                            "Add wizard's onion and cook until translucent",
+                            "Toss in elven carrots and bewitched ingredients",
+                            `Stir in enchanted ${ingredients[2]} and let flavors mingle`,
+                            "Pour in phoenix broth and add mystical herbs",
+                            "Simmer for 20 minutes while reciting culinary incantations",
+                            "Remove the ancient bay leaf before serving",
+                            "Garnish with a sprinkle of fairy dust (parsley)"
+                        ],
+                        prepTime: "15 min",
+                        cookTime: "25 min",
+                        difficulty: "Mystical"
+                    },
+                    {
+                        title: `Enchanted ${ingredients[1]} Elixir`,
+                        description: `A transformative elixir that elevates humble ${ingredients[1]} to magical heights. Created through ChefGPT's alchemical processes.`,
+                        ingredients: [
+                            `3 cups ${ingredients[1]}, blessed`,
+                            "1 cup celestial cream",
+                            "1/2 cup wizard's cheese (Parmesan)",
+                            "2 cloves vampire-repelling garlic",
+                            "1 tbsp basil from the sacred grove",
+                            "A pinch of ground griffin claw (nutmeg)",
+                            "Mystic pasta of your choosing"
+                        ],
+                        instructions: [
+                            "Cook mystic pasta according to ancient scroll instructions",
+                            "In a separate cauldron, bless the ingredients with celestial cream",
+                            "Add vampire-repelling garlic and sacred basil",
+                            "Whisk in wizard's cheese until a magical sauce forms",
+                            `Combine with blessed ${ingredients[1]} and stir with purpose`,
+                            "Add a pinch of ground griffin claw for mystical warmth",
+                            "Combine with cooked mystic pasta",
+                            "Serve with a sprinkle of starlight (black pepper)"
+                        ],
+                        prepTime: "10 min",
+                        cookTime: "15 min",
+                        difficulty: "Enchanted"
+                    }
+                ];
+            }
+            
+            // Display recipes in the UI
+            function displayRecipes(recipes) {
+                if (!recipes || recipes.length === 0) {
+                    recipesContainer.innerHTML = `
+                        <div class="no-recipes">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <h3>No recipes found</h3>
+                            <p>Try different magical ingredients!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Generate recipe cards
+                recipes.forEach(recipe => {
+                    const recipeCard = document.createElement('div');
+                    recipeCard.className = 'recipe-card';
+                    
+                    recipeCard.innerHTML = `
+                        <h3 class="recipe-title"><i class="fas fa-scroll"></i> ${recipe.title}</h3>
+                        <div class="recipe-description">${recipe.description}</div>
+                        
+                        <div class="recipe-ingredients">
+                            <h4 class="recipe-subtitle"><i class="fas fa-flask"></i> Magical Ingredients</h4>
+                            <ul>
+                                ${recipe.ingredients.map(ing => `<li>${ing}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="recipe-instructions">
+                            <h4 class="recipe-subtitle"><i class="fas fa-book-spells"></i> Enchantment Steps</h4>
+                            <ol>
+                                ${recipe.instructions.map(step => `<li>${step}</li>`).join('')}
+                            </ol>
+                        </div>
+                        
+                        <div class="recipe-info">
+                            <div class="info-item"><i class="fas fa-hourglass-half"></i> Prep: ${recipe.prepTime}</div>
+                            <div class="info-item"><i class="fas fa-fire-flame"></i> Cook: ${recipe.cookTime}</div>
+                            <div class="info-item"><i class="fas fa-hat-wizard"></i> ${recipe.difficulty}</div>
+                            <div class="info-item"><i class="fas fa-crystal-ball"></i> ChefGPT</div>
+                        </div>
+                    `;
+                    
+                    recipesContainer.appendChild(recipeCard);
+                });
+            }
+            
+            // Show notification
+            function showNotification(message, type) {
+                // Remove existing notification if any
+                const existing = document.querySelector('.notification');
+                if (existing) existing.remove();
+                
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                
+                // Style the notification
+                notification.style.position = 'fixed';
+                notification.style.bottom = '20px';
+                notification.style.right = '20px';
+                notification.style.padding = '15px 25px';
+                notification.style.borderRadius = '10px';
+                notification.style.color = 'white';
+                notification.style.fontWeight = '500';
+                notification.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+                notification.style.zIndex = '1000';
+                notification.style.animation = 'fadeIn 0.3s, fadeOut 0.3s 2.7s';
+                
+                // Set background based on type
+                if (type === 'error') {
+                    notification.style.background = 'linear-gradient(135deg, #ff5252, #c0392b)';
+                } else if (type === 'success') {
+                    notification.style.background = 'linear-gradient(135deg, #2ce3a0, #27ae60)';
+                } else {
+                    notification.style.background = 'linear-gradient(135deg, #6a11cb, #2575fc)';
+                }
+                
+                document.body.appendChild(notification);
+                
+                // Remove notification after 3 seconds
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+            
+            // Animate loading dots
+            function startLoadingAnimation() {
+                const dots = document.querySelectorAll('.dot');
+                dots.forEach(dot => {
+                    dot.style.animationPlayState = 'running';
+                    dot.style.opacity = '1';
+                });
+            }
+            
+            function stopLoadingAnimation() {
+                const dots = document.querySelectorAll('.dot');
+                dots.forEach(dot => {
+                    dot.style.animationPlayState = 'paused';
+                    dot.style.opacity = '0';
+                });
+            }
+            
+            // Create initial magical pulses
+            setInterval(createPulse, 2000);
+            for (let i = 0; i < 5; i++) {
+                setTimeout(createPulse, i * 500);
+            }
+        });
+    </script>
+</body>
+</html>
